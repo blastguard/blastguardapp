@@ -7,6 +7,10 @@
     <title>Blast Guard Application</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
         integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
         integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
     <style>
@@ -17,19 +21,6 @@
         .heading {
             display: flex;
             justify-content: center;
-            font-family: monospace;
-        }
-
-        .bodydiv {
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            font-family: monospace;
-            font-size: 16px;
-        }
-
-        .slidecontainer {
-            width: 300px;
         }
 
         .slider {
@@ -42,6 +33,9 @@
             opacity: 0.7;
             -webkit-transition: .2s;
             transition: opacity .2s;
+        }
+        .slidecontainer {
+            margin-top: 5px;
         }
 
         .slider:hover {
@@ -66,54 +60,43 @@
             cursor: pointer;
         }
 
-        .btn {
+        .fontfamily{
             font-family: monospace;
-            padding: 5px;
-            background-color: #369abb;
-            box-shadow: none;
-            border: 2px solid #369abb;
-            color: white;
-            margin-left: 19px;
-            height: 52%;
-
         }
 
-        .horflex {
-            display: flex;
-            flex-direction: row;
-        }
-
-        .verflex {
-            display: flex;
-            flex-direction: row;
-        }
     </style>
 </head>
 
 <body>
-    <h2 class="heading">Blast Guard Application</h2>
-    <div class="bodydiv" style="padding: 10px;">
-        <!-- <input type="number" id="blastradius" /> -->
-        <p>1. Select a location on map 2. Select a value to set Radius</p>
-        <div class="verflex" style="
-        justify-content: space-between;
-    ">
-            <div class="horflex">
-                <input type="text" id="latvalue" placeholder="Latitude" style="height: 30px;" value="17.000538" />
-                <input type="text" id="lngvalue" placeholder="Longitude" style="height: 30px;" value="81.804031" />
-                <button class="btn" onclick="setMarker()">Set Marker</button>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="heading fontfamily">Blast Guard Application</h2>
             </div>
-            <div class="slidecontainer">
+        </div>
+        <div class="row fontfamily">
+            <div class="col-12">
+                <p>1. Select a location on map 2. Select a value to set Radius</p>
+            </div>
+        </div>
+        <div class="row fontfamily">
+            <div class="col-12 col-lg-4">
+                <input type="text" id="latvalue" placeholder="Latitude" style="height: 38px;width: 100px;margin-top: 5px;" value="17.000538" />
+                <input type="text" id="lngvalue" placeholder="Longitude" style="height: 38px;width: 100px;margin-top: 5px" value="81.804031" />
+                <button type="button" class="btn btn-primary" onclick="setMarker()">Set Marker</button>
+            </div>
+            <div class="slidecontainer col-12 col-lg-4">
                 <input type="range" min="1" max="100" value="7" class="slider" id="blastradius">
                 <p>Radius: <span id="demo"></span>00 m</p>
             </div>
-            <div class="horflex">
-                <button class="btn" onclick="myFunction()">Set Blast Radius</button>
-                <button class="btn" onclick="setPointsSet1()">Add Points</button>
-                <button class="btn" onclick="clearAll()">Clear</button>
+            <div class="col-12 col-lg-4">
+                <button type="button" class="btn btn-primary" style="margin-top: 5px;" onclick="myFunction()">Set Blast Radius</button>
+                <button type="button" class="btn btn-primary" style="margin-top: 5px;" onclick="setPointsSet1()">Add Points</button>
+                <button type="button" class="btn btn-primary" style="margin-top: 5px;" onclick="clearAll()">Clear</button>
             </div>
 
         </div>
+       
     </div>
     <div id="map"></div>
     <script>
@@ -317,24 +300,7 @@
         }
 
         function clearAll(){
-            if (markerin) {
-                map.removeLayer(markerin);
-                markerin=null;
-            }
-            if (markerout) {
-                map.removeLayer(markerout);
-                markerout=null;
-            }
-            if (marker) {
-                map.removeLayer(marker);
-                marker=null;
-            }
-            if (circle) {
-                map.removeLayer(circle);
-                circle=null;
-            }
-            latlongArr=[];
-
+            window.location.reload();
         }
 
         function clearAllExceptMarker(){
@@ -350,7 +316,6 @@
                 map.removeLayer(circle);
                 circle=null;
             }
-
         }
 
 
