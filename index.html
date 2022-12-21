@@ -1,0 +1,370 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blast Guard Application</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+        integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+        integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+    <style>
+        #map {
+            height: 95%;
+        }
+
+        .heading {
+            display: flex;
+            justify-content: center;
+            font-family: monospace;
+        }
+
+        .bodydiv {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            font-family: monospace;
+            font-size: 16px;
+        }
+
+        .slidecontainer {
+            width: 300px;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #04AA6D;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #04AA6D;
+            cursor: pointer;
+        }
+
+        .btn {
+            font-family: monospace;
+            padding: 5px;
+            background-color: #369abb;
+            box-shadow: none;
+            border: 2px solid #369abb;
+            color: white;
+            margin-left: 19px;
+            height: 52%;
+
+        }
+
+        .horflex {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .verflex {
+            display: flex;
+            flex-direction: row;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 class="heading">Blast Guard Application</h2>
+    <div class="bodydiv" style="padding: 10px;">
+        <!-- <input type="number" id="blastradius" /> -->
+        <p>1. Select a location on map 2. Select a value to set Radius</p>
+        <div class="verflex" style="
+        justify-content: space-between;
+    ">
+            <div class="horflex">
+                <input type="text" id="latvalue" placeholder="Latitude" style="height: 30px;" value="17.000538" />
+                <input type="text" id="lngvalue" placeholder="Longitude" style="height: 30px;" value="81.804031" />
+                <button class="btn" onclick="setMarker()">Set Marker</button>
+            </div>
+            <div class="slidecontainer">
+                <input type="range" min="1" max="100" value="7" class="slider" id="blastradius">
+                <p>Radius: <span id="demo"></span>00 m</p>
+            </div>
+            <div class="horflex">
+                <button class="btn" onclick="myFunction()">Set Blast Radius</button>
+                <button class="btn" onclick="setPointsSet1()">Add Points</button>
+                <button class="btn" onclick="clearAll()">Clear</button>
+            </div>
+
+        </div>
+    </div>
+    <div id="map"></div>
+    <script>
+
+        var latlong = [[81.72937874633061,
+            17.22302627048083],
+        [
+            81.72441960611661,
+            17.224668307265276
+        ], [
+            81.72777843151044,
+            17.226584875555744
+        ], [
+            81.73026483472546,
+            17.2256265938951
+        ], [
+            81.726426177132,
+            17.2227933842708
+        ], [
+            81.7280837792739,
+            17.22141842865419
+        ], [
+            81.7308319091423,
+            17.22129343218151
+        ], [
+            81.73166071021399,
+            17.224043335047597
+        ], [
+            81.72389615280838,
+            17.221668421345285
+        ], [
+            81.72782205262058,
+            17.21979346792085
+        ], [
+            81.73414711342753,
+            17.222918379729137
+        ]];
+
+
+        var latlongArr = [];
+        const mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
+        const mbUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+
+        const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+        const satellite = L.tileLayer(mbUrl, { id: 'mapbox/satellite-v9', tileSize: 512, zoomOffset: -1, attribution: mbAttr });
+        const baseLayers = {
+            'OpenStreetMap': osm,
+            'Satellite': satellite
+        };
+        //var map = L.map('map', { layers: [osm] }).setView([17.22302627048083, 81.72937874633061], 15);
+        var map = L.map('map', { layers: [osm], center: [17.22302627048083, 81.7293787463306], zoom: 14, preferCanvas: true })
+        const layerControl = L.control.layers(baseLayers).addTo(map);
+
+
+        var marker, markerin, markerout;
+        var blastzonelatlng;
+
+        map.on('click', function (e) {
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            marker = new L.Marker(e.latlng).addTo(map);
+            latlongArr=[];
+            latlongArr.push([e.latlng.lng + 0.001, e.latlng.lat + 0.001])
+            latlongArr.push([e.latlng.lng + 0.002, e.latlng.lat + 0.002])
+            latlongArr.push([e.latlng.lng + 0.003, e.latlng.lat + 0.003])
+            latlongArr.push([e.latlng.lng + 0.004, e.latlng.lat + 0.004])
+            latlongArr.push([e.latlng.lng + 0.005, e.latlng.lat + 0.005])
+            latlongArr.push([e.latlng.lng + 0.006, e.latlng.lat + 0.006])
+            latlongArr.push([e.latlng.lng + 0.007, e.latlng.lat + 0.007])
+            latlongArr.push([e.latlng.lng + 0.008, e.latlng.lat + 0.008])
+            latlongArr.push([e.latlng.lng + 0.009, e.latlng.lat + 0.009])
+            latlongArr.push([e.latlng.lng + 0.0097, e.latlng.lat + 0.0097])
+            latlongArr.push([e.latlng.lng + 0.011, e.latlng.lat + 0.011])
+            latlongArr.push([e.latlng.lng + 0.012, e.latlng.lat + 0.012])
+            latlongArr.push([e.latlng.lng + 0.013, e.latlng.lat + 0.013])
+            latlongArr.push([e.latlng.lng + 0.014, e.latlng.lat + 0.014])
+            latlongArr.push([e.latlng.lng + 0.015, e.latlng.lat + 0.015])
+            latlongArr.push([e.latlng.lng + 0.016, e.latlng.lat + 0.016])
+            latlongArr.push([e.latlng.lng + 0.017, e.latlng.lat + 0.017])
+            latlongArr.push([e.latlng.lng + 0.018, e.latlng.lat + 0.018])
+            latlongArr.push([e.latlng.lng + 0.019, e.latlng.lat + 0.019])
+            latlongArr.push([e.latlng.lng + 0.020, e.latlng.lat + 0.020])
+            blastzonelatlng = e.latlng;
+            marker.bindPopup("Blast Zone Set");
+
+        });
+
+        var bounds, circle, flag=false, flagcounter=0;
+        function myFunction() {
+            if (circle) {
+                map.removeLayer(circle);
+            }
+            circle = L.circle(blastzonelatlng, {
+                color: 'yellow',
+                fillColor: 'yellow',
+                fillOpacity: 0.5,
+                radius: document.getElementById('blastradius').value * 100
+            }).addTo(map);
+
+            circle.bindPopup("Blast Zone");
+            bounds = circle.getBounds();
+            console.log(bounds)
+
+        }
+
+        function setMarker() {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            var lati = document.getElementById('latvalue').value;//17.000538;
+            var lngi = document.getElementById('lngvalue').value;//81.804031;
+            var newLatLng = new L.LatLng(lati, lngi);
+            marker = new L.Marker(newLatLng).addTo(map);
+            map.panTo(newLatLng);
+            blastzonelatlng = newLatLng;
+            latlongArr=[];
+            latlongArr.push([newLatLng.lng + 0.001, newLatLng.lat + 0.001])
+            latlongArr.push([newLatLng.lng + 0.002, newLatLng.lat + 0.002])
+            latlongArr.push([newLatLng.lng + 0.003, newLatLng.lat + 0.003])
+            latlongArr.push([newLatLng.lng + 0.004, newLatLng.lat + 0.004])
+            latlongArr.push([newLatLng.lng + 0.005, newLatLng.lat + 0.005])
+            latlongArr.push([newLatLng.lng + 0.006, newLatLng.lat + 0.006])
+            latlongArr.push([newLatLng.lng + 0.007, newLatLng.lat + 0.007])
+            latlongArr.push([newLatLng.lng + 0.008, newLatLng.lat + 0.008])
+            latlongArr.push([newLatLng.lng + 0.009, newLatLng.lat + 0.009])
+            latlongArr.push([newLatLng.lng + 0.0097, newLatLng.lat + 0.0097])
+            latlongArr.push([newLatLng.lng + 0.011, newLatLng.lat + 0.011])
+            latlongArr.push([newLatLng.lng + 0.012, newLatLng.lat + 0.012])
+            latlongArr.push([newLatLng.lng + 0.013, newLatLng.lat + 0.013])
+            latlongArr.push([newLatLng.lng + 0.014, newLatLng.lat + 0.014])
+            latlongArr.push([newLatLng.lng + 0.015, newLatLng.lat + 0.015])
+            latlongArr.push([newLatLng.lng + 0.016, newLatLng.lat + 0.016])
+            latlongArr.push([newLatLng.lng + 0.017, newLatLng.lat + 0.017])
+            latlongArr.push([newLatLng.lng + 0.018, newLatLng.lat + 0.018])
+            latlongArr.push([newLatLng.lng + 0.019, newLatLng.lat + 0.019])
+            latlongArr.push([newLatLng.lng + 0.020, newLatLng.lat + 0.020])
+
+        }
+
+        function setPointsSet1() {
+            for (var x = 0, ln = latlongArr.length; x < ln; x++) {
+                setTimeout(function (y) {
+                    console.log(latlongArr[y][1], latlongArr[y][0]);
+                    if(!flag && flagcounter<2){
+                        containsPoint(latlongArr[y][1], latlongArr[y][0]);
+                    }
+                }, x * 2000, x); // we're passing x
+            }
+        }
+
+        function containsPoint(lat, lng) {
+            if (markerin) {
+                map.removeLayer(markerin);
+            }
+            if (markerout) {
+                map.removeLayer(markerout);
+            }
+            var hello = L.latLng(lat, lng)
+            L.Circle.include({
+                contains: function (latLng) {
+                    return this.getLatLng().distanceTo(latLng) < this.getRadius();
+                }
+            });
+
+            var result = (circle.contains(hello)) ? console.log('inside') : console.log('outside');
+            if (circle.contains(hello)) {
+                //inside
+                flag = false;
+                var myIcon = L.icon({
+                    iconUrl: 'reddot.png',
+                    iconSize: [30, 30]
+                });
+                markerin = new L.Marker(hello, { icon: myIcon });
+                markerin.addTo(map);
+                markerin.bindPopup('I am in Blast Zone');
+                markerin.openPopup();
+                console.log("Hi iam in bound");
+            } else {
+                //outside
+                flag = true;
+                flagcounter++;
+                var myIcon2 = L.icon({
+                    iconUrl: 'greendot.png',
+                    iconSize: [30, 30]
+                });
+                markerout = new L.Marker(hello, { icon: myIcon2 });
+                markerout.addTo(map);
+                markerout.bindPopup('Ready for Blast');
+                markerout.openPopup();
+                console.log("Iam not in bound");
+                if(flagcounter==2){
+                    alert('Ready for Blast')
+                }
+            }
+        }
+
+        function clearAll(){
+            if (markerin) {
+                map.removeLayer(markerin);
+                markerin=null;
+            }
+            if (markerout) {
+                map.removeLayer(markerout);
+                markerout=null;
+            }
+            if (marker) {
+                map.removeLayer(marker);
+                marker=null;
+            }
+            if (circle) {
+                map.removeLayer(circle);
+                circle=null;
+            }
+            latlongArr=[];
+
+        }
+
+        function clearAllExceptMarker(){
+            if (markerin) {
+                map.removeLayer(markerin);
+                markerin=null;
+            }
+            if (markerout) {
+                map.removeLayer(markerout);
+                markerout=null;
+            }
+            if (circle) {
+                map.removeLayer(circle);
+                circle=null;
+            }
+
+        }
+
+
+        var slider = document.getElementById("blastradius");
+        var output = document.getElementById("demo");
+        output.innerHTML = slider.value;
+
+        slider.oninput = function () {
+            output.innerHTML = this.value;
+            clearAllExceptMarker();
+        }
+
+    </script>
+
+</body>
+
+</html>
