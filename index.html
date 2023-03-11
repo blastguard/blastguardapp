@@ -225,7 +225,7 @@
         function setPointsSet1() {
             if (!flag) {
                 setInterval(function () {
-                    get(child(dbref, 'Customer/hemanth')).then((snapshot) => {
+                    get(child(dbref, 'Customer/blastguard')).then((snapshot) => {
                         if (snapshot.exists()) {
                             console.log('OLD' + snapshot.val().Latitude)
                             userlatitude = snapshot.val().Latitude
