@@ -67,6 +67,12 @@
         .fontfamily {
             font-family: monospace;
         }
+
+        @keyframes flash {
+            50% {
+                background: linear-gradient(45deg, red, red);
+            }
+        }
     </style>
 </head>
 
@@ -96,11 +102,9 @@
             </div>
             <div class="col-12 col-lg-4">
                 <button type="button" id="myfunctionid" class="btn btn-primary" style="margin-top: 5px;"
-                    onclick="myFunction()">Set Blast
-                    Radius</button>
+                    onclick="myFunction()">Set Blast Radius</button>
                 <button type="button" id="setPointsSet1id" class="btn btn-primary" style="margin-top: 5px;"
-                    onclick="setPointsSet1()">Start Track
-                </button>
+                    onclick="setPointsSet1()">Start Track</button>
                 <button type="button" id="clearAllid" class="btn btn-primary" style="margin-top: 5px;"
                     onclick="clearAll()">Clear</button>
             </div>
@@ -151,7 +155,7 @@
 
 
         var latlongArr = [];
-        var userlatitude, userlongitude = null;
+        var userlatitude, userlongitude,readyFlagval = null;
         const mbAttr = 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
         const mbUrl = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
 
@@ -231,7 +235,8 @@
                             userlatitude = snapshot.val().Latitude
                             console.log('OLD' + snapshot.val().Longitude)
                             userlongitude = snapshot.val().Longitude
-                            containsPoint(userlatitude, userlongitude)
+                            readyFlagval = snapshot.val().ReadyFlag
+                            containsPoint(userlatitude, userlongitude, readyFlagval)
                         }
                         else {
                             alert('no data')
@@ -242,7 +247,7 @@
             }
         }
 
-        function containsPoint(lat, lng) {
+        function containsPoint(lat, lng, readyFlagval) {
             if (markerin) {
                 map.removeLayer(markerin);
             }
@@ -262,29 +267,41 @@
                 flag = false;
                 var myIcon = L.icon({
                     iconUrl: 'reddot.png',
-                    iconSize: [30, 30]
+                    iconSize: [60, 60]
                 });
                 markerin = new L.Marker(hello, { icon: myIcon });
                 markerin.addTo(map);
-                markerin.bindPopup('I am in Blast Zone');
+                markerin.bindPopup('Guarding in Progress');
                 markerin.openPopup();
                 console.log("Hi iam in bound");
-                document.getElementById('statusmessage').textContent = "Not Ready for Blast"
+                document.getElementById('statusmessage').textContent = "Guarding in Progress"
                 document.getElementById('statusmesdiv').style.background = "red"
+                document.getElementById('statusmesdiv').style.animation="none"
+
+                if(readyFlagval){
+                    document.getElementById('statusmessage').textContent = "Discrepancy Occured"
+                    document.getElementById('statusmesdiv').style.animation="flash 1s infinite"
+                }
             } else {
                 //outside
                 flag = true;
                 var myIcon2 = L.icon({
                     iconUrl: 'greendot.png',
-                    iconSize: [30, 30]
+                    iconSize: [60, 60]
                 });
                 markerout = new L.Marker(hello, { icon: myIcon2 });
                 markerout.addTo(map);
-                markerout.bindPopup('Ready for Blast');
+                markerout.bindPopup('Guarding in Progress');
                 markerout.openPopup();
-                console.log("Iam not in bound");
-                document.getElementById('statusmessage').textContent = "Ready for Blast"
-                document.getElementById('statusmesdiv').style.background = "green"
+                console.log("I am not in bound");
+                document.getElementById('statusmessage').textContent = "Guarding in Progress"
+                document.getElementById('statusmesdiv').style.background = "red"
+                if(readyFlagval){
+                    document.getElementById('statusmessage').textContent = "Ready For Blast"
+                    document.getElementById('statusmesdiv').style.background = "green"
+                    document.getElementById('statusmesdiv').style.animation="none"
+                    markerout.bindPopup('Ready For Blast');
+                }
             }
         }
 
@@ -322,3 +339,4 @@
 </body>
 
 </html>
+
