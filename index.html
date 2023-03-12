@@ -267,7 +267,8 @@
                 flag = false;
                 var myIcon = L.icon({
                     iconUrl: 'reddot.png',
-                    iconSize: [60, 60]
+                    iconSize: [60, 60],
+                    popupAnchor: [10, -20]
                 });
                 markerin = new L.Marker(hello, { icon: myIcon });
                 markerin.addTo(map);
@@ -287,7 +288,8 @@
                 flag = true;
                 var myIcon2 = L.icon({
                     iconUrl: 'greendot.png',
-                    iconSize: [60, 60]
+                    iconSize: [60, 60],
+                    popupAnchor: [10, -20]
                 });
                 markerout = new L.Marker(hello, { icon: myIcon2 });
                 markerout.addTo(map);
